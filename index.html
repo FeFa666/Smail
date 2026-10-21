@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ ТЕМЫ ============ */
+  :root {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --danger: #ef4444;
+    --radius: 12px;
+    --input-bg: #f8fafc;
+  }
+
+  [data-theme="dark"] {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --danger: #f87171;
+    --input-bg: #0f172a;
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .hidden { display: none !important; }
+
+  button { font-family: inherit; cursor: pointer; transition: all 0.2s; }
+  
+  input, textarea {
+    font-family: inherit;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    width: 100%;
+    font-size: 14px;
+    transition: border-color 0.2s, background-color 0.3s;
+  }
+  
+  /* Группа ввода для Smail + домен */
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-group:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .input-group input {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none !important;
+  }
+  .input-suffix {
+    padding: 12px 14px;
+    background: var(--bg-main);
+    color: var(--text-muted);
+    border-left: 1px solid var(--border);
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+
+  textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+  .btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .btn:hover { background: var(--primary-hover); }
+  .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+  .btn.ghost {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+  }
+  .btn.ghost:hover { background: var(--bg-main); }
+  .btn.danger { background: var(--danger); color: #fff; }
+
+  /* ============ AUTH SCREEN ============ */
+  #auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .auth-card {
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+  }
+  .auth-card h1 { margin: 0 0 8px; font-size: 28px; color: var(--primary); font-weight: 700; text-align: center; }
+  .auth-card p { color: var(--text-muted); margin: 0 0 28px; font-size: 15px; text-align: center; }
+  
+  .field { margin-bottom: 16px; }
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    display: block;
+  }
+  
+  .auth-submit-btn { width: 100%; margin-top: 8px; }
+  
+  .auth-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 14px;
+    margin-top: 20px;
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+  }
+  .auth-toggle-btn:hover { text-decoration: underline; }
+  
+  .error-msg { color: var(--danger); font-size: 13px; margin-top: 12px; min-height: 18px; text-align: center; }
+
+  /* ============ APP SCREEN ============ */
+  #app-screen { display: flex; flex-direction: column; min-height: 100vh; }
+  
+  header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  .brand { font-weight: 700; font-size: 20px; color: var(--primary); }
+  .user { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-muted); }
+
+  .theme-btn {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .theme-btn:hover { background: var(--border); }
+
+  nav {
+    display: flex;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 69px;
+    z-index: 9;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-right: 8px;
+  }
+  nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
+  nav button:hover { color: var(--text-main); }
+
+  main { flex: 1; padding: 32px 24px; max-width: 800px; margin: 0 auto; width: 100%; }
+
+  /* Home Tab */
+  .home-hero { text-align: center; padding: 20px 0 40px; }
+  .home-hero h2 { font-size: 32px; margin: 0 0 12px; }
+  .home-hero p { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    transition: background-color 0.3s;
+  }
+  .stat .num { font-size: 36px; font-weight: 700; color: var(--primary); }
+  .stat .label { color: var(--text-muted); font-size: 13px; font-weight: 500; text-transform: uppercase; margin-top: 8px; letter-spacing: 0.5px; }
+
+  /* Mail List */
+  .mail-list { display: flex; flex-direction: column; gap: 12px; }
+  .mail-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s, background-color 0.3s;
+  }
+  .mail-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-color: var(--text-muted);
+  }
+  .mail-item.unread { border-left: 4px solid var(--primary); }
+  .row1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 12px; }
+  .who { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .date { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+  .subj { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .preview { color: var(--text-muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { display: flex; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--text-muted); }
+  .badge { background: var(--bg-main); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
+  .badge.accent { background: rgba(37, 99, 235, 0.1); color: var(--primary); border-color: transparent; font-weight: 500; }
+  
+  .empty { text-align: center; color: var(--text-muted); padding: 60px 20px; font-size: 15px; }
+
+  /* FAB (To Send) */
+  .fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    z-index: 20;
+  }
+  .fab:hover { background: var(--primary-hover); transform: translateY(-2px); }
+  .fab svg { width: 24px; height: 24px; fill: currentColor; }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    transition: background-color 0.3s;
+  }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 { margin: 0; font-size: 18px; font-weight: 600; }
+  .modal-close { background: none; border: none; color: var(--text-muted); font-size: 24px; padding: 0 4px; line-height: 1; }
+  .modal-close:hover { color: var(--text-main); }
+  .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+  .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: flex-end; }
+  
+  textarea { resize: vertical; min-height: 140px; }
+
+  /* Attachments */
+  .attachments { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .att-thumb { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .att-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .att-thumb .rm {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center;
+  }
+  .att-thumb .rm:hover { background: var(--danger); }
+  .attach-btn {
+    width: 80px; height: 80px;
+    border: 2px dashed var(--border); border-radius: 8px;
+    background: var(--bg-main); color: var(--text-muted);
+    font-size: 28px; display: flex; align-items: center; justify-content: center;
+  }
+  .attach-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(37,99,235,0.05); }
+  .size-info { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-weight: 500; }
+  .size-info.warn { color: #d97706; }
+  .size-info.over { color: var(--danger); }
+
+  /* Mail View */
+  .mail-view-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+  .mail-view-subject { font-size: 22px; font-weight: 600; margin: 12px 0 20px; color: var(--text-main); }
+  .mail-view-body { white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 15px; }
+  .mail-view-images { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+  .mail-view-images img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); }
+
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: -3px; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: 1fr; }
+    main { padding: 20px 16px; }
+    .auth-card { padding: 24px; }
+    nav { padding: 0 8px; overflow-x: auto; }
+    .fab { bottom: 20px; right: 20px; width: 56px; height: 56px; }
+    .user span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <h1 id="auth-title">Вход в Smail</h1>
+    <p id="auth-subtitle">Рады видеть вас снова!</p>
+    
+    <div class="field">
+      <label class="field-label">Smail</label>
+      <div class="input-group">
+        <input type="text" id="auth-username" placeholder="вавалпрал" autocomplete="username" spellcheck="false">
+        <div class="input-suffix">@smail.com</div>
+      </div>
+    </div>
+    
+    <div class="field">
+      <label class="field-label">Пароль</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    
+    <div class="error-msg" id="auth-error"></div>
+    
+    <button class="btn auth-submit-btn" id="btn-auth-submit">Войти</button>
+    <button class="auth-toggle-btn" id="btn-auth-toggle">Нет аккаунта? Зарегистрироваться</button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app-screen" class="hidden">
+  <header>
+    <div class="brand">Smail</div>
+    <div class="user">
+      <span id="user-email"></span>
+      <button class="theme-btn" id="btn-theme" title="Сменить тему">💻</button>
+      <button class="btn ghost" id="btn-signout" style="padding:8px 16px;font-size:13px;">Выйти</button>
+    </div>
+  </header>
+  
+  <nav>
+    <button data-tab="home" class="active">Главная</button>
+    <button data-tab="received">Полученные</button>
+    <button data-tab="shipped">Отправленные</button>
+  </nav>
+  
+  <main id="content"></main>
+  
+  <button class="fab" id="btn-open-compose" title="Написать письмо">
+    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<!-- ============ COMPOSE MODAL ============ -->
+<div class="modal-overlay hidden" id="compose-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Новое письмо</h3>
+      <button class="modal-close" data-close="compose-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="field-label">Получатель (Smail)</label>
+        <input type="text" id="compose-to" placeholder="username@smail.com">
+      </div>
+      <div>
+        <label class="field-label">Тема</label>
+        <input type="text" id="compose-subject" placeholder="О чём письмо?" maxlength="200">
+      </div>
+      <div>
+        <label class="field-label">Сообщение</label>
+        <textarea id="compose-message" placeholder="Напишите что-нибудь..."></textarea>
+      </div>
+      <div>
+        <label class="field-label">Вложения (картинки)</label>
+        <div class="attachments" id="compose-attachments"></div>
+        <div class="size-info" id="compose-size">0 / 50 МБ</div>
+        <input type="file" id="file-input" accept="image/*" multiple class="hidden">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" data-close="compose-modal">Отмена</button>
+      <button class="btn" id="btn-send">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW MODAL ============ -->
+<div class="modal-overlay hidden" id="view-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Просмотр письма</h3>
+      <button class="modal-close" data-close="view-modal">✕</button>
+    </div>
+    <div class="modal-body" id="view-body"></div>
+    <div class="modal-footer" id="view-footer"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, doc, getDoc, getDocs,
+  query, where, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAOpx8IZlLJdDv7M_i51hjnnJsoRHVX-WU",
+  authDomain: "smail-3cb0b.firebaseapp.com",
+  projectId: "smail-3cb0b",
+  storageBucket: "smail-3cb0b.firebasestorage.app",
+  messagingSenderId: "390310890655",
+  appId: "1:390310890655:web:22266f02ce4fb8eebee6aa"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+/* ---------- ТЕМЫ (System / Light / Dark) ---------- */
+const themeBtn = document.getElementById('btn-theme');
+let currentTheme = localStorage.getItem('smail-theme') || 'system';
+
+function applyTheme(theme) {
+  if (theme === 'system') {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    themeBtn.textContent = '💻';
+    themeBtn.title = 'Системная тема';
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '🌙' : '🌞';
+    themeBtn.title = theme === 'dark' ? 'Темная тема' : 'Светлая тема';
+  }
+}
+
+themeBtn.onclick = () => {
+  const themes = ['system', 'light', 'dark'];
+  let nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+  currentTheme = themes[nextIndex];
+  localStorage.setItem('smail-theme', currentTheme);
+  applyTheme(currentTheme);
+};
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (currentTheme === 'system') applyTheme('system');
+});
+applyTheme(currentTheme);
+
+/* ---------- State ---------- */
+let currentUser = null;
+let currentTab = 'home';
+let attachments = [];
+let authMode = 'login';
+
+const MAX_ATTACHMENTS   = 10;
+const MAX_TOTAL_BYTES   = 50 * 1024 * 1024;
+const MAX_IMG_BASE64    = 700_000;
+const LIMIT_SOFT_BYTES  = 1_000_000;
+const DOMAIN = '@smail.com';
+
+/* ---------- Auth Logic ---------- */
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  const authScreen = document.getElementById('auth-screen');
+  const appScreen = document.getElementById('app-screen');
+  
+  if (user) {
+    authScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+    document.getElementById('user-email').textContent = user.email;
+    switchTab('home');
+  } else {
+    authScreen.classList.remove('hidden');
+    appScreen.classList.add('hidden');
+    document.getElementById('compose-modal').classList.add('hidden');
+    document.getElementById('view-modal').classList.add('hidden');
+    document.getElementById('auth-password').value = '';
+    document.getElementById('auth-error').textContent = '';
+  }
+});
+
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const authSubmitBtn = document.getElementById('btn-auth-submit');
+const authToggleBtn = document.getElementById('btn-auth-toggle');
+
+authToggleBtn.onclick = () => {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('auth-error').textContent = '';
+  
+  if (authMode === 'login') {
+    authTitle.textContent = 'Вход в Smail';
+    authSubtitle.textContent = 'Рады видеть вас снова!';
+    authSubmitBtn.textContent = 'Войти';
+    authToggleBtn.textContent = 'Нет аккаунта? Зарегистрироваться';
+  } else {
+    authTitle.textContent = 'Регистрация';
+    authSubtitle.textContent = 'Придумайте свой Smail.';
+    authSubmitBtn.textContent = 'Создать аккаунт';
+    authToggleBtn.textContent = 'Уже есть аккаунт? Войти';
+  }
+};
+
+authSubmitBtn.onclick = doAuth;
+document.getElementById('auth-password').onkeydown = e => {
+  if (e.key === 'Enter') doAuth();
+};
+
+async function doAuth() {
+  const usernameInput = document.getElementById('auth-username').value.trim();
+  const pass = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  
+  if (!usernameInput || !pass) { 
+    errEl.textContent = 'Заполните все поля'; return; 
+  }
+  
+  if (usernameInput.includes(' ') || usernameInput.includes('@')) {
+    errEl.textContent = 'Имя не должно содержать пробелы или символ @'; return;
+  }
+  
+  if (pass.length < 6) { 
+    errEl.textContent = 'Пароль должен быть не менее 6 символов'; return; 
+  }
+
+  const email = usernameInput.toLowerCase() + DOMAIN;
+  
+  authSubmitBtn.disabled = true;
+  authSubmitBtn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> Подождите...';
+
+  try {
+    if (authMode === 'login') {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    }
+  } catch (e) { 
+    errEl.textContent = authErrorText(e); 
+  } finally {
+    authSubmitBtn.disabled = false;
+    authSubmitBtn.textContent = authMode === 'login' ? 'Войти' : 'Создать аккаунт';
+  }
+}
+
+function authErrorText(e) {
+  return ({
+    'auth/email-already-in-use':'Этот Smail уже занят',
+    'auth/invalid-email':'Некорректный Smail',
+    'auth/weak-password':'Слишком слабый пароль (мин. 6 символов)',
+    'auth/user-not-found':'Пользователь с таким Smail не найден',
+    'auth/wrong-password':'Неверный пароль',
+    'auth/invalid-credential':'Неверный Smail или пароль',
+    'auth/too-many-requests':'Слишком много попыток, попробуйте позже',
+    'auth/operation-not-allowed':'Включите вход по Email/Password в консоли Firebase!'
+  })[e.code] || e.message;
+}
+
+document.getElementById('btn-signout').onclick = () => signOut(auth);
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('nav button').forEach(b =>
+  b.onclick = () => switchTab(b.dataset.tab));
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('nav button')
+    .forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  renderContent();
+}
+
+async function renderContent() {
+  const c = document.getElementById('content');
+  if (currentTab === 'home') {
+    c.innerHTML = `
+      <div class="home-hero">
+        <h2>Добро пожаловать в Smail</h2>
+        <p>Отправляйте письма с картинками — быстро и безопасно.</p>
+        <div class="stats" id="home-stats">
+          <div class="empty">Загрузка статистики...</div>
+        </div>
+      </div>`;
+    loadHomeStats();
+  } else if (currentTab === 'received') await renderMailList('received');
+  else                                  await renderMailList('shipped');
+}
+
+async function loadHomeStats() {
+  const el = document.getElementById('home-stats');
+  if (!el) return;
+  try {
+    const [recvSnap, sentSnap] = await Promise.all([
+      getDocs(query(collection(db,'mails'), where('to','==',currentUser.email))),
+      // ВАЖНО: используем 'from', чтобы совпадало с правилами Firestore
+      getDocs(query(collection(db,'mails'), where('from','==',currentUser.email)))
+    ]);
+    const unread = recvSnap.docs.filter(d => !d.data().read).length;
+    el.innerHTML = `
+      <div class="stat"><div class="num">${recvSnap.size}</div><div class="label">Получено</div></div>
+      <div class="stat"><div class="num">${sentSnap.size}</div><div class="label">Отправлено</div></div>
+      <div class="stat"><div class="num">${unread}</div><div class="label">Непрочитанных</div></div>
+      <div class="stat"><div class="num" style="font-size:16px;margin-top:12px;">${escapeHtml(currentUser.email.split('@')[0])}</div><div class="label">Ваш Smail</div></div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="empty">Ошибка загрузки: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function renderMailList(mode) {
+  const c = document.getElementById('content');
+  c.innerHTML = '<div class="empty">Загрузка писем...</div>';
+  try {
+    const qq = mode === 'received'
+      ? query(collection(db,'mails'), where('to','==',currentUser.email))
+      // ВАЖНО: используем 'from', чтобы совпадало с правилами Firestore
+      : query(collection(db,'mails'), where('from','==',currentUser.email));
+    const snap = await getDocs(qq);
+    const mails = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    mails.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    if (!mails.length) {
+      c.innerHTML = `<div class="empty">${mode==='received'
+        ? 'Входящих писем пока нет.'
+        : 'Вы ещё ничего не отправили.'}</div>`;
+      return;
+    }
+    const list = document.createElement('div');
+    list.className = 'mail-list';
+    mails.forEach(m => list.appendChild(mailItemEl(m, mode)));
+    c.innerHTML = '';
+    c.appendChild(list);
+  } catch (e) {
+    c.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function mailItemEl(m, mode) {
+  const el = document.createElement('div');
+  const unread = mode === 'received' && !m.read;
+  el.className = 'mail-item' + (unread ? ' unread' : '');
+  const who = mode === 'received' ? m.from : m.to;
+  el.innerHTML = `
+    <div class="row1">
+      <div class="who">${mode==='received'?'От: ':'Кому: '}${escapeHtml(who)}</div>
+      <div class="date">${fmtDate(m.createdAt)}</div>
+    </div>
+    <div class="subj">${escapeHtml(m.subject || '(без темы)')}</div>
+    <div class="preview">${escapeHtml((m.message||'').slice(0,120))}</div>
+    <div class="meta">
+      ${unread ? '<span class="badge accent">Новое</span>' : ''}
+      ${m.imagesCount ? `<span class="badge">📎 ${m.imagesCount} вложений</span>` : ''}
+    </div>`;
+  el.onclick = () => openMail(m.id);
+  return el;
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts.seconds*1000);
+  const diff = Date.now() - d.getTime();
+  if (diff < 60_000) return 'только что';
+  if (diff < 3_600_000) return Math.floor(diff/60_000) + ' мин. назад';
+  if (diff < 86_400_000) return Math.floor(diff/3_600_000) + ' ч. назад';
+  if (diff < 604_800_000) return Math.floor(diff/86_400_000) + ' д. назад';
+  return d.toLocaleDateString();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Compose ---------- */
+document.getElementById('btn-open-compose').onclick = openCompose;
+
+function openCompose() {
+  attachments = [];
+  document.getElementById('compose-to').value = '';
+  document.getElementById('compose-subject').value = '';
+  document.getElementById('compose-message').value = '';
+  renderAttachments();
+  document.getElementById('compose-modal').classList.remove('hidden');
+}
+
+document.getElementById('file-input').onchange = async e => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  await addFiles(files);
+};
+
+async function addFiles(files) {
+  for (const file of files) {
+    if (attachments.length >= MAX_ATTACHMENTS) {
+      alert(`Максимум ${MAX_ATTACHMENTS} картинок`); break;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert(`Файл «${file.name}» не является картинкой`); continue;
+    }
+    try {
+      const prepared = await prepareImage(file);
+      attachments.push(prepared);
+      renderAttachments();
+    } catch (err) {
+      console.error(err);
+      alert('Не удалось обработать ' + file.name);
+    }
+  }
+}
+
+function renderAttachments() {
+  const box = document.getElementById('compose-attachments');
+  box.innerHTML = '';
+  attachments.forEach((a, idx) => {
+    const d = document.createElement('div');
+    d.className = 'att-thumb';
+    d.innerHTML = `<img src="${a.data}" alt=""><button class="rm" title="Удалить">✕</button>`;
+    d.querySelector('.rm').onclick = () => {
+      attachments.splice(idx, 1);
+      renderAttachments();
+    };
+    box.appendChild(d);
+  });
+  if (attachments.length < MAX_ATTACHMENTS) {
+    const add = document.createElement('button');
+    add.className = 'attach-btn';
+    add.textContent = '+';
+    add.title = 'Добавить картинку';
+    add.onclick = () => document.getElementById('file-input').click();
+    box.appendChild(add);
+  }
+  updateSizeInfo();
+}
+
+function updateSizeInfo() {
+  const el = document.getElementById('compose-size');
+  const total = attachments.reduce((s,a) => s + a.data.length, 0);
+  const mb = total / (1024*1024);
+  el.textContent = `${mb.toFixed(2)} / 50 МБ · ${attachments.length}/${MAX_ATTACHMENTS} картинок`;
+  el.className = 'size-info' + (
+    total > MAX_TOTAL_BYTES ? ' over'
+    : total > MAX_TOTAL_BYTES * 0.8 ? ' warn' : '');
+}
+
+document.getElementById('btn-send').onclick = sendMail;
+
+async function sendMail() {
+  const to      = document.getElementById('compose-to').value.trim().toLowerCase();
+  const subject = document.getElementById('compose-subject').value.trim();
+  const message = document.getElementById('compose-message').value.trim();
+  const btn     = document.getElementById('btn-send');
+
+  if (!to)                                  return alert('Укажите получателя');
+  
+  // Разрешаем вводить как просто имя, так и полный адрес
+  let finalTo = to;
+  if (!to.includes('@')) {
+    finalTo = to + DOMAIN;
+  }
+  
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(finalTo)) return alert('Неверный формат получателя');
+  if (finalTo === currentUser.email)             return alert('Нельзя отправить письмо самому себе');
+  if (!subject && !message)                 return alert('Добавьте тему или сообщение');
+
+  const totalBytes = attachments.reduce((s,a) => s + a.data.length, 0);
+  if (totalBytes > MAX_TOTAL_BYTES) return alert('Общий размер вложений превышает 50 МБ');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Отправка...';
+
+  try {
+    const mailRef = await addDoc(collection(db,'mails'), {
+      from: currentUser.email,
+      fromUid: currentUser.uid,
+      to: finalTo,
+      subject,
+      message,
+      createdAt: serverTimestamp(),
+      imagesCount: attachments.length,
+      read: false,
+    });
+
+    for (let i = 0; i < attachments.length; i++) {
+      await addDoc(collection(db,'mails', mailRef.id,'images'), {
+        order: i,
+        name: attachments[i].name,
+        type: attachments[i].type,
+        data: attachments[i].data,
+      });
+    }
+
+    document.getElementById('compose-modal').classList.add('hidden');
+    attachments = [];
+    if (currentTab === 'shipped') await renderMailList('shipped');
+    else if (currentTab === 'home') await loadHomeStats();
+    else switchTab('shipped');
+  } catch (e) {
+    console.error(e);
+    alert('Ошибка отправки: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Отправить';
+  }
+}
+
+/* ---------- Обработка картинок ---------- */
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function compressImage(file, quality, maxDim) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      const scale = Math.min(1, maxDim / Math.max(width, height));
+      width  = Math.max(1, Math.round(width  * scale));
+      height = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('load failed')); };
+    img.src = url;
+  });
+}
+
+async function prepareImage(file) {
+  if (file.size <= LIMIT_SOFT_BYTES) {
+    const b64 = await fileToBase64(file);
+    if (b64.length <= MAX_IMG_BASE64) {
+      return { name: file.name, type: file.type, data: b64 };
+    }
+  }
+  let quality = 0.85, maxDim = 1600, b64 = '';
+  for (let i = 0; i < 10; i++) {
+    const blob = await compressImage(file, quality, maxDim);
+    b64 = await fileToBase64(blob);
+    if (b64.length <= MAX_IMG_BASE64) break;
+    quality = Math.max(0.3, quality - 0.12);
+    maxDim  = Math.max(600, Math.floor(maxDim * 0.8));
+  }
+  return {
+    name: file.name.replace(/\.[^.]+$/, '') + '.jpg',
+    type: 'image/jpeg',
+    data: b64,
+  };
+}
+
+/* ---------- Просмотр письма ---------- */
+async function openMail(id) {
+  const body   = document.getElementById('view-body');
+  const footer = document.getElementById('view-footer');
+  body.innerHTML = '<div class="empty">Загрузка...</div>';
+  footer.innerHTML = '';
+  document.getElementById('view-modal').classList.remove('hidden');
+
+  try {
+    const snap = await getDoc(doc(db,'mails', id));
+    if (!snap.exists()) { body.innerHTML = '<div class="empty">Письмо не найдено</div>'; return; }
+    const m = { id: snap.id, ...snap.data() };
+    const isReceiver = m.to === currentUser.email;
+
+    if (isReceiver && !m.read)
+      updateDoc(doc(db,'mails', id), { read: true }).catch(()=>{});
+
+    body.innerHTML = `
+      <div>
+        <div class="mail-view-meta"><strong>${isReceiver ? 'От' : 'Кому'}:</strong>
+          ${escapeHtml(isReceiver ? m.from : m.to)}</div>
+        <div class="mail-view-meta"><strong>Дата:</strong> ${fmtDate(m.createdAt)}</div>
+        <div class="mail-view-subject">${escapeHtml(m.subject || '(без темы)')}</div>
+        <div class="mail-view-body">${escapeHtml(m.message || '')}</div>
+        ${m.imagesCount
+          ? '<div class="mail-view-images" id="view-images"><div class="empty">Загрузка картинок...</div></div>'
+          : ''}
+      </div>`;
+
+    footer.innerHTML = '';
+    if (isReceiver) {
+      const del = document.createElement('button');
+      del.className = 'btn danger';
+      del.textContent = 'Удалить';
+      del.onclick = () => deleteMail(m);
+      footer.appendChild(del);
+    }
+    const close = document.createElement('button');
+    close.className = 'btn ghost';
+    close.textContent = 'Закрыть';
+    close.onclick = () => { document.getElementById('view-modal').classList.add('hidden'); };
+    footer.appendChild(close);
+
+    if (m.imagesCount > 0) {
+      const imgsSnap = await getDocs(collection(db,'mails', id,'images'));
+      const images = imgsSnap.docs.map(d => d.data())
+        .sort((a,b) => a.order - b.order);
+      const box = document.getElementById('view-images');
+      if (box) {
+        box.innerHTML = '';
+        images.forEach(img => {
+          const el = document.createElement('img');
+          el.src = img.data;
+          el.alt = img.name || '';
+          box.appendChild(el);
+        });
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = `<div class="empty">Ошибка: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function deleteMail(m) {
+  if (!confirm('Удалить это письмо? Действие необратимо.')) return;
+  try {
+    const imgs = await getDocs(collection(db,'mails', m.id,'images'));
+    for (const d of imgs.docs) await deleteDoc(d.ref);
+    await deleteDoc(doc(db,'mails', m.id));
+    document.getElementById('view-modal').classList.add('hidden');
+    if (currentTab === 'received') await renderMailList('received');
+    else if (currentTab === 'shipped') await renderMailList('shipped');
+  } catch (e) {
+    alert('Ошибка удаления: ' + e.message);
+  }
+}
+
+/* ---------- Закрытие модалок ---------- */
+document.querySelectorAll('[data-close]').forEach(b => {
+  b.onclick = () => { document.getElementById(b.dataset.close).classList.add('hidden'); };
+});
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.onclick = e => { if (e.target === o) o.classList.add('hidden'); };
+});
+</script>
+</body>
+</html>
